@@ -6,7 +6,7 @@ Main application file using modular architecture
 
 import streamlit as st
 import fitz  # PyMuPDF
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI
 from dotenv import load_dotenv
 import os
 import time

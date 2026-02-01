@@ -7,7 +7,7 @@ Handles answer evaluation with improved consistency and reliability
 import re
 import logging
 from typing import Dict, List, Tuple, Optional
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
