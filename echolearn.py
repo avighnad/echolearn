@@ -59,7 +59,262 @@ auth_manager.show_user_profile_sidebar()
 # Get current user
 current_user = auth_manager.get_current_user()
 
-st.title("Echolearn - Viva Question Evaluator")
+# ==================== MODERN LIGHT THEME ====================
+st.markdown("""
+<style>
+    /* Clean, modern light background */
+    .stApp {
+        background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        max-width: 1000px;
+        padding: 2rem 2rem 4rem 2rem;
+    }
+    
+    /* Headers styling */
+    h1 {
+        color: #1e3a5f !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.5px;
+    }
+    
+    h2, h3 {
+        color: #334155 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Primary buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Secondary (white/outline) buttons for specific elements */
+    .stButton > button[kind="secondary"] {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    /* Selectbox styling */
+    .stSelectbox > div > div {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .stSelectbox > div > div:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Text input styling */
+    .stTextInput > div > div > input {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Text area styling */
+    .stTextArea > div > div > textarea {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Slider styling */
+    .stSlider > div > div > div {
+        background: #e2e8f0;
+    }
+    
+    .stSlider > div > div > div > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: white;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #667eea;
+        background: #f8faff;
+    }
+    
+    /* Info/success/warning boxes */
+    .stAlert {
+        border-radius: 12px;
+        border: none;
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        background: white;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    /* Metrics */
+    [data-testid="metric-container"] {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: #f1f5f9;
+        padding: 0.5rem;
+        border-radius: 12px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Dividers */
+    hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+        margin: 1.5rem 0;
+    }
+    
+    /* Radio buttons */
+    .stRadio > div {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .stRadio > div > label {
+        background: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .stRadio > div > label:hover {
+        border-color: #667eea;
+        background: #f8faff;
+    }
+    
+    /* Hide Streamlit elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Custom card styling for markdown content */
+    .custom-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        margin: 1rem 0;
+    }
+    
+    /* Question display card */
+    .question-display {
+        background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+        margin: 1rem 0;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Success message styling */
+    .success-badge {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 600;
+    }
+    
+    /* Recording button animation */
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    
+    .recording-active {
+        animation: pulse 2s infinite;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Modern header with gradient text
+st.markdown("""
+<div style="text-align: center; padding: 1rem 0 1.5rem 0;">
+    <h1 style="
+        font-size: 3rem; 
+        font-weight: 800; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    ">🎓 EchoLearn</h1>
+    <p style="color: #64748b; font-size: 1.1rem; margin: 0.5rem 0 0 0;">
+        AI-Powered Viva Practice Platform
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # ------------------ Session State Initialization ------------------
 def initialize_session_state():
@@ -172,19 +427,47 @@ def main():
         auth_manager.show_user_dashboard()
         
         # ------------------ Question Mode Selection ------------------
-        st.subheader("📚 Choose Learning Mode")
-        question_mode = st.radio(
-            "Select how you want to practice:",
-            ["PDF Upload", "Predefined Questions", "🎤 Mock Viva Interview", "📊 Analytics Dashboard", "Audio Training Lab"],
-            index=["PDF Upload", "Predefined Questions", "🎤 Mock Viva Interview", "📊 Analytics Dashboard", "Audio Training Lab"].index(st.session_state.question_mode) if st.session_state.question_mode in ["PDF Upload", "Predefined Questions", "🎤 Mock Viva Interview", "📊 Analytics Dashboard", "Audio Training Lab"] else 0,
+        st.markdown("### 🎯 Choose Your Learning Mode")
+        
+        # Mode descriptions for better UX
+        mode_info = {
+            "📄 PDF Upload": ("Upload & Learn", "Upload your PDFs and get AI-generated questions"),
+            "📋 Question Bank": ("Practice Questions", "Practice with our curated question bank"),
+            "🎤 Mock Viva": ("Interview Prep", "Practice with AI interviewers"),
+            "📊 Analytics": ("Your Progress", "View detailed performance insights"),
+            "🎧 Audio Lab": ("Voice Training", "Improve your speaking skills")
+        }
+        
+        mode_mapping = {
+            "📄 PDF Upload": "PDF Upload",
+            "📋 Question Bank": "Predefined Questions", 
+            "🎤 Mock Viva": "🎤 Mock Viva Interview",
+            "📊 Analytics": "📊 Analytics Dashboard",
+            "🎧 Audio Lab": "Audio Training Lab"
+        }
+        
+        # Find current mode key
+        current_mode_key = next((k for k, v in mode_mapping.items() if v == st.session_state.question_mode), "📄 PDF Upload")
+        
+        # Create mode selection with radio buttons
+        selected_mode = st.radio(
+            "Select Mode:",
+            list(mode_info.keys()),
+            index=list(mode_info.keys()).index(current_mode_key),
             horizontal=True,
-            help="PDF Upload: Generate questions from your own textbook. Predefined Questions: Practice with curated questions. Mock Viva Interview: Practice with AI interviewers. Analytics Dashboard: View your learning analytics."
+            label_visibility="collapsed"
         )
         
-        st.session_state.question_mode = question_mode
+        # Show selected mode description
+        title, desc = mode_info[selected_mode]
+        st.caption(f"**{title}** — {desc}")
+        
+        st.session_state.question_mode = mode_mapping[selected_mode]
+        question_mode = st.session_state.question_mode
+        
+        st.markdown("---")
         
         # ------------------ Input Fields ------------------
-        st.subheader("📝 Start New Study Session")
         # Handle case where current_user might be None
         default_name = ""
         if current_user:
@@ -305,8 +588,16 @@ def main():
 
 def handle_pdf_upload(name, grade, subject, book_title):
     """Handle PDF upload and question generation"""
-    st.header("Upload the Book's PDF")
-    book_pdf_file = st.file_uploader("Choose a PDF", type="pdf")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); 
+                border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                border-left: 4px solid #a855f7;">
+        <h2 style="color: #7c3aed; margin: 0;">📄 Upload Your PDF</h2>
+        <p style="color: #64748b; margin: 0.5rem 0 0 0;">Upload a study material and get AI-generated questions</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    book_pdf_file = st.file_uploader("Choose a PDF file", type="pdf", label_visibility="collapsed")
 
     if book_pdf_file is not None:
         doc = fitz.open(stream=book_pdf_file.read(), filetype="pdf")
@@ -373,7 +664,14 @@ def handle_pdf_upload(name, grade, subject, book_title):
 
 def handle_predefined_questions(name, grade, subject, book_title, predefined_vars):
     """Handle predefined questions mode"""
-    st.header("📋 Predefined Question Bank")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); 
+                border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                border-left: 4px solid #0ea5e9;">
+        <h2 style="color: #0369a1; margin: 0;">📋 Question Bank</h2>
+        <p style="color: #64748b; margin: 0.5rem 0 0 0;">Practice with curated questions from our database</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Extract variables from the passed dictionary
     subject_id = predefined_vars.get('subject_id')
@@ -383,7 +681,8 @@ def handle_predefined_questions(name, grade, subject, book_title, predefined_var
     current_user = predefined_vars.get('current_user')
     
     # Start predefined question session button
-    if st.button("🚀 Start Question Session"):
+    st.markdown("")  # Add spacing
+    if st.button("🚀 Start Question Session", type="primary", use_container_width=True):
         # Detailed validation with specific error messages
         validation_errors = []
         
@@ -438,8 +737,14 @@ def handle_audio_training_lab():
 # =============================================
 def handle_mock_viva_interview(current_user):
     """Handle the Mock Viva Interview interface"""
-    st.markdown("# 🎤 Mock Viva Interview")
-    st.markdown("Practice your viva skills with AI-powered interviewers who adapt to your performance!")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+                border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                border-left: 4px solid #f59e0b;">
+        <h2 style="color: #b45309; margin: 0;">🎤 Mock Viva Interview</h2>
+        <p style="color: #64748b; margin: 0.5rem 0 0 0;">Practice with AI-powered interviewers who adapt to your performance</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Initialize session state for mock viva
     if 'mock_viva_session' not in st.session_state:
@@ -683,7 +988,14 @@ def handle_mock_viva_interview(current_user):
 # =============================================
 def handle_analytics_dashboard(current_user):
     """Handle the Smart Analytics Dashboard"""
-    st.markdown("# 📊 Smart Analytics Dashboard")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); 
+                border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                border-left: 4px solid #10b981;">
+        <h2 style="color: #047857; margin: 0;">📊 Analytics Dashboard</h2>
+        <p style="color: #64748b; margin: 0.5rem 0 0 0;">Track your progress and identify areas for improvement</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     if not current_user:
         st.error("Please log in to view your analytics.")

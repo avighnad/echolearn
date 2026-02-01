@@ -18,36 +18,60 @@ class UIComponents:
     @staticmethod
     def display_question_navigation(current_index: int, total_questions: int, qa_data: Dict) -> None:
         """Display question navigation and progress"""
-        col1, col2, col3 = st.columns([1, 4, 1])
+        # Progress bar at top
+        progress = (len(st.session_state.used_q_indices)) / total_questions if total_questions > 0 else 0
+        
+        st.markdown(f"""
+        <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span style="color: #64748b; font-size: 0.9rem;">Question {current_index + 1} of {total_questions}</span>
+                <span style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; 
+                            padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+                    {qa_data.get('level', 'Basic')}
+                </span>
+            </div>
+            <div style="background: #e2e8f0; border-radius: 10px; height: 8px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #6366f1, #8b5cf6); height: 100%; 
+                            width: {progress * 100}%; border-radius: 10px; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem; color: #64748b; font-size: 0.85rem;">
+                {len(st.session_state.used_q_indices)} answered • {total_questions - len(st.session_state.used_q_indices)} remaining
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Navigation buttons
+        col1, col2, col3 = st.columns([1, 2, 1])
         
         with col1:
-            # Previous button - only enabled if not on first question
-            if st.button("⬅️ Previous", disabled=(current_index == 0)):
+            if st.button("← Previous", disabled=(current_index == 0), use_container_width=True):
                 st.session_state.qa_index = current_index - 1
                 st.rerun()
                 
-        with col2:
-            # Show current question position and progress
-            answered_count = len(st.session_state.used_q_indices)
-            st.markdown(f"**Question level: {qa_data.get('level', 'Unknown')}**")
-            st.markdown(f"**Progress: {answered_count} of {total_questions} answered**")
-            
         with col3:
-            # Next button - only enabled if not on last question
-            if st.button("Next ➡️", disabled=(current_index == total_questions - 1)):
+            if st.button("Next →", disabled=(current_index == total_questions - 1), use_container_width=True):
                 st.session_state.qa_index = current_index + 1
                 st.rerun()
     
     @staticmethod
     def display_mode_toggles() -> Dict[str, bool]:
         """Display mode toggles and return current settings"""
-        col_adaptive, col_sm, col_info = st.columns([1, 1, 2])
+        
+        st.markdown("""
+        <div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;
+                    border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">⚙️ Session Settings</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_adaptive, col_sm = st.columns(2)
         
         with col_adaptive:
             adaptive_mode = st.checkbox(
-                "🎯 Adaptive Mode", 
+                "🎯 Adaptive Difficulty", 
                 value=st.session_state.get('adaptive_mode', True),
-                help="Enable intelligent difficulty adjustment based on performance"
+                help="Automatically adjust question difficulty based on your performance"
             )
             if adaptive_mode != st.session_state.get('adaptive_mode', True):
                 st.session_state.adaptive_mode = adaptive_mode
@@ -55,29 +79,40 @@ class UIComponents:
         
         with col_sm:
             selective_mutism_mode = st.checkbox(
-                "🎙️ Selective Mutism Training", 
+                "💜 Speech Practice Mode", 
                 value=st.session_state.get('selective_mutism_mode', False),
-                help="Enable speech training mode - provides gentle encouragement for verbal responses, supportive feedback, and confidence building"
+                help="Gentle, encouraging environment for speech practice"
             )
             if selective_mutism_mode != st.session_state.get('selective_mutism_mode', False):
                 st.session_state.selective_mutism_mode = selective_mutism_mode
-                # Reset confidence and success tracking when toggling mode
                 if selective_mutism_mode:
                     st.session_state.confidence_level = 1
                     st.session_state.success_streak = 0
-                    st.info("🎙️ Selective Mutism Training Mode enabled! Focus on gentle speech practice with supportive feedback.")
                 st.rerun()
         
-        with col_info:
-            if adaptive_mode and not selective_mutism_mode:
-                current_difficulty = st.session_state.get('current_difficulty', 10)
-                consecutive_wrong = st.session_state.get('consecutive_wrong_same_level', 0)
-                st.caption(f"Current adaptive difficulty: **{current_difficulty}/20** | Consecutive wrong: **{consecutive_wrong}**")
-            elif selective_mutism_mode:
-                confidence_level = st.session_state.get('confidence_level', 1)
-                success_streak = st.session_state.get('success_streak', 0)
-                confidence_stars = "⭐" * confidence_level
-                st.caption(f"🎙️ Speech Training | Confidence Level: {confidence_stars} | Success Streak: **{success_streak}**")
+        # Info display
+        if adaptive_mode and not selective_mutism_mode:
+            current_difficulty = st.session_state.get('current_difficulty', 10)
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 8px; 
+                        padding: 0.5rem 1rem; display: inline-block; margin-top: 0.5rem;">
+                <span style="color: #1e40af; font-size: 0.85rem;">
+                    🎯 Difficulty Level: <strong>{current_difficulty}/20</strong>
+                </span>
+            </div>
+            """, unsafe_allow_html=True)
+        elif selective_mutism_mode:
+            confidence_level = st.session_state.get('confidence_level', 1)
+            success_streak = st.session_state.get('success_streak', 0)
+            stars = "⭐" * min(confidence_level, 5)
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #faf5ff, #f3e8ff); border-radius: 8px; 
+                        padding: 0.5rem 1rem; display: inline-flex; gap: 1rem; margin-top: 0.5rem;">
+                <span style="color: #6d28d9; font-size: 0.85rem;">💜 Speech Mode</span>
+                <span style="color: #7c3aed; font-size: 0.85rem;">{stars}</span>
+                <span style="color: #8b5cf6; font-size: 0.85rem;">🔥 {success_streak} streak</span>
+            </div>
+            """, unsafe_allow_html=True)
         
         return {
             'adaptive_mode': adaptive_mode,
@@ -87,29 +122,53 @@ class UIComponents:
     @staticmethod
     def display_question_info(qa_data: Dict, adaptive_mode: bool = False) -> None:
         """Display question information and current difficulty"""
-        st.markdown(f"**Q:** {qa_data['question']}")
+        # Beautiful question card
+        score = qa_data.get('score')
+        score_html = ""
+        if score is not None:
+            if score >= 8:
+                score_class = "score-high"
+                score_bg = "linear-gradient(135deg, #dcfce7, #bbf7d0)"
+                score_color = "#166534"
+            elif score >= 5:
+                score_class = "score-medium"
+                score_bg = "linear-gradient(135deg, #fef9c3, #fef08a)"
+                score_color = "#854d0e"
+            else:
+                score_class = "score-low"
+                score_bg = "linear-gradient(135deg, #fee2e2, #fecaca)"
+                score_color = "#991b1b"
+            score_html = f"""
+            <div style="background: {score_bg}; padding: 0.5rem 1rem; border-radius: 20px; 
+                        display: inline-block; margin-top: 1rem;">
+                <span style="color: {score_color}; font-weight: 600;">Score: {score}/10</span>
+            </div>
+            """
         
-        # Show score if already answered
-        if qa_data.get('score') is not None:
-            st.success(f"Scored: {qa_data['score']}/10")
-        
-        # Show current adaptive difficulty if in adaptive mode
-        if adaptive_mode:
-            current_qa_difficulty = qa_data.get('difficulty', UIComponents._get_difficulty_from_level(qa_data.get('level', 'Basic')))
-            current_difficulty = st.session_state.get('current_difficulty', 10)
-            st.info(f"🎯 Current Target Difficulty: {current_difficulty} | This Question: {current_qa_difficulty}")
+        st.markdown(f"""
+        <div style="background: white; border-radius: 20px; padding: 2rem; margin: 1rem 0;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 0.5rem;">📝 Question</div>
+            <div style="color: #1e293b; font-size: 1.15rem; line-height: 1.6; font-weight: 500;">
+                {qa_data['question']}
+            </div>
+            {score_html}
+        </div>
+        """, unsafe_allow_html=True)
     
     @staticmethod
     def display_tts_button(qa_data: Dict) -> None:
         """Display text-to-speech button"""
-        if st.button("🔊 Read Question Aloud"):
-            try:
-                import pyttsx3
-                engine = pyttsx3.init()
-                engine.say(qa_data["question"])
-                engine.runAndWait()
-            except Exception as e:
-                st.warning(f"TTS failed: {e}")
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("🔊 Read Aloud", use_container_width=True):
+                try:
+                    import pyttsx3
+                    engine = pyttsx3.init()
+                    engine.say(qa_data["question"])
+                    engine.runAndWait()
+                except Exception as e:
+                    st.warning(f"Text-to-speech unavailable: {e}")
     
     @staticmethod
     def display_audio_recording_interface(qa_data: Dict, current_index: int, selective_mutism_mode: bool = False) -> Optional[str]:
@@ -122,112 +181,165 @@ class UIComponents:
     @staticmethod
     def _display_selective_mutism_audio_interface(qa_data: Dict, current_index: int) -> Optional[str]:
         """Display selective mutism audio interface with live visualization"""
-        st.markdown("### 🎙️ **Speech Training Practice**")
-        st.info("💪 This is your chance to practice speaking! Remember, every attempt makes you stronger.")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); 
+                    border-radius: 20px; padding: 2rem; margin: 1rem 0;
+                    border: 2px solid #c4b5fd;">
+            <h3 style="color: #6d28d9; margin: 0 0 0.5rem 0;">🎙️ Speech Practice Zone</h3>
+            <p style="color: #7c3aed; margin: 0;">
+                💪 You're doing amazing! Every word you speak makes you stronger.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # More encouraging interface for selective mutism training
+        # Initialize states
+        if f'sm_transcribed_text_{current_index}' not in st.session_state:
+            st.session_state[f'sm_transcribed_text_{current_index}'] = None
+        
+        # Comfort settings
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
-            record_seconds = st.slider("Choose comfortable recording time:", 3, 10, 5, 
-                                     help="Start with shorter times if you feel more comfortable")
+            record_seconds = st.slider(
+                "🕐 Choose your comfortable time:", 
+                3, 15, 5,
+                help="Start with shorter times if you prefer"
+            )
         with col2:
             confidence_level = st.session_state.get('confidence_level', 1)
-            if confidence_level >= 3:
-                st.success("🌟 You're building great confidence!")
-            elif confidence_level >= 2:
-                st.info("😊 You're making progress!")
-            else:
-                st.info("🌱 Every step counts!")
-        
+            stars = "⭐" * min(confidence_level, 5)
+            st.markdown(f"""
+            <div style="background: white; border-radius: 12px; padding: 1rem; text-align: center; margin-top: 1rem;">
+                <div style="font-size: 0.8rem; color: #64748b;">Your Confidence</div>
+                <div style="font-size: 1.2rem;">{stars}</div>
+            </div>
+            """, unsafe_allow_html=True)
         with col3:
-            use_live = st.checkbox("🔴 Live View", value=True, help="See your voice in real-time!")
+            success_streak = st.session_state.get('success_streak', 0)
+            st.markdown(f"""
+            <div style="background: white; border-radius: 12px; padding: 1rem; text-align: center; margin-top: 1rem;">
+                <div style="font-size: 0.8rem; color: #64748b;">Streak</div>
+                <div style="font-size: 1.2rem;">🔥 {success_streak}</div>
+            </div>
+            """, unsafe_allow_html=True)
         
-        if use_live:
-            # Use live audio visualizer with encouraging messages
-            if st.button("🎙️ **Practice Speaking** - You've Got This!", key="speech_training_live", type="primary"):
-                try:
-                    st.success("🌟 Wonderful! You're being so brave by practicing speaking!")
-                    st.info("🎙️ Watch the live visualization as you speak - see how powerful your voice is!")
-                    
-                    audio_data, sample_rate = live_audio_interface.display_live_recording_interface(record_seconds)
-                    
-                    if audio_data is not None:
-                        # Store audio data
-                        st.session_state[f'audio_data_{current_index}'] = audio_data
-                        st.session_state[f'audio_sample_rate_{current_index}'] = sample_rate
-                        
-                        # Transcribe with encouraging messages
-                        import scipy.io.wavfile as wav
-                        import speech_recognition as sr
-                        
-                        wav.write("temp.wav", sample_rate, (audio_data * 32767).astype(np.int16))
-                        
-                        with st.spinner("🔍 Understanding your speech... You're doing great!"):
-                            recognizer = sr.Recognizer()
-                            with sr.AudioFile("temp.wav") as source:
-                                audio_file = recognizer.record(source)
-                                text = recognizer.recognize_google(audio_file)
-                                
-                                st.success("🎉 Amazing! I heard what you said! You spoke clearly!")
-                                st.text_area("What you said (so proud of you!):", value=text, key=f"speech_training_text_{current_index}")
-                                
-                                return text
-                
-                except Exception as e:
-                    st.warning("🤗 No worries! Technology can be tricky sometimes. The important thing is that you tried to speak!")
-                    st.info("💡 **Tip**: You can still practice by using the text option below. Every form of participation counts!")
-                    return None
+        # Encouraging message based on confidence
+        if confidence_level >= 4:
+            st.success("🌟 You're building incredible confidence! Keep going!")
+        elif confidence_level >= 2:
+            st.info("😊 You're making wonderful progress! Every try counts!")
         else:
-            # Simple recording mode
-            if st.button("🎙️ **Practice Speaking** - You've Got This!", key="speech_training"):
-                try:
-                    # Extra encouraging message for selective mutism training
-                    st.success("🌟 Wonderful! You're being so brave by practicing speaking!")
-                    st.info("🎙️ Recording now... Take your time and speak when you're ready!")
-                    
-                    import sounddevice as sd
-                    import scipy.io.wavfile as wav
-                    import speech_recognition as sr
-                    
-                    fs = 44100
-                    audio = sd.rec(int(record_seconds * fs), samplerate=fs, channels=1, dtype='int16')
-                    sd.wait()
-                    wav.write("temp.wav", fs, audio)
-                    
-                    # Store audio data for analysis
-                    st.session_state[f'audio_data_{current_index}'] = audio.flatten()
-                    st.session_state[f'audio_sample_rate_{current_index}'] = fs
-                    
-                    # Transcribe with encouraging messages
-                    with st.spinner("🔍 Understanding your speech... You're doing great!"):
-                        recognizer = sr.Recognizer()
-                        with sr.AudioFile("temp.wav") as source:
-                            audio_data = recognizer.record(source)
-                            text = recognizer.recognize_google(audio_data)
-                            
-                            st.success("🎉 Amazing! I heard what you said! You spoke clearly!")
-                            st.text_area("What you said (so proud of you!):", value=text, key=f"speech_training_text_{current_index}")
-                            
-                            # Display audio analysis
-                            UIComponents.display_audio_analysis(
-                                st.session_state[f'audio_data_{current_index}'],
-                                st.session_state[f'audio_sample_rate_{current_index}']
-                            )
-                            
-                            return text
-                            
-                except Exception as e:
-                    st.warning("🤗 No worries! Technology can be tricky sometimes. The important thing is that you tried to speak!")
-                    st.info("💡 **Tip**: You can still practice by using the text option below. Every form of participation counts!")
-                    return None
+            st.info("🌱 Take your time. Starting is the bravest part!")
         
-        # Show analysis if audio was previously recorded
-        if f'audio_data_{current_index}' in st.session_state:
-            if st.button("📊 Show Audio Analysis", key=f"show_analysis_sm_{current_index}"):
-                UIComponents.display_audio_analysis(
-                    st.session_state[f'audio_data_{current_index}'],
-                    st.session_state[f'audio_sample_rate_{current_index}']
-                )
+        # Record button
+        if st.button(
+            "🎙️ I'm Ready to Speak!", 
+            type="primary", 
+            key=f"sm_record_{current_index}",
+            use_container_width=True
+        ):
+            try:
+                import sounddevice as sd
+                import scipy.io.wavfile as wav
+                import speech_recognition as sr
+                import os
+                
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%); 
+                            border-radius: 16px; padding: 1.5rem; text-align: center; margin: 1rem 0;">
+                    <div style="font-size: 2rem;">🎙️</div>
+                    <strong style="color: #5b21b6;">Recording... You've got this!</strong>
+                    <p style="color: #7c3aed; margin: 0.5rem 0 0 0;">Speak whenever you're ready</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Record
+                fs = 44100
+                progress = st.progress(0)
+                
+                chunk_duration = 0.5
+                num_chunks = int(record_seconds / chunk_duration)
+                all_audio = []
+                
+                for i in range(num_chunks):
+                    chunk = sd.rec(int(chunk_duration * fs), samplerate=fs, channels=1, dtype='int16')
+                    sd.wait()
+                    all_audio.append(chunk)
+                    progress.progress((i + 1) / num_chunks)
+                
+                audio = np.vstack(all_audio)
+                temp_file = f"temp_sm_{current_index}.wav"
+                wav.write(temp_file, fs, audio)
+                
+                # Store audio
+                st.session_state[f'audio_data_{current_index}'] = audio.flatten().astype(np.float32) / 32767.0
+                st.session_state[f'audio_sample_rate_{current_index}'] = fs
+                st.session_state['last_recording_duration'] = record_seconds
+                
+                # Transcribe
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%); 
+                            border-radius: 12px; padding: 1rem; text-align: center; color: white;">
+                    🔍 Listening to your wonderful voice...
+                </div>
+                """, unsafe_allow_html=True)
+                
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(temp_file) as source:
+                    audio_file = recognizer.record(source)
+                    text = recognizer.recognize_google(audio_file)
+                    
+                    st.session_state[f'sm_transcribed_text_{current_index}'] = text
+                    
+                    try:
+                        os.remove(temp_file)
+                    except:
+                        pass
+                    
+                    st.rerun()
+                    
+            except sr.UnknownValueError:
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+                            border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 1.5rem;">🤗</div>
+                    <strong style="color: #92400e;">That's okay!</strong>
+                    <p style="color: #a16207; margin: 0.5rem 0 0 0;">
+                        The important thing is that you tried. Want to try again, or use text instead?
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                return None
+            except Exception as e:
+                st.warning("🤗 Technology can be tricky! You can try again or use text below.")
+                return None
+        
+        # Show transcription if available
+        if st.session_state.get(f'sm_transcribed_text_{current_index}'):
+            text = st.session_state[f'sm_transcribed_text_{current_index}']
+            
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
+                        border-radius: 16px; padding: 1.5rem; text-align: center; margin: 1rem 0;">
+                <div style="font-size: 2rem;">🎉</div>
+                <strong style="color: #166534;">Amazing! You spoke beautifully!</strong>
+                <p style="color: #15803d; margin: 0.5rem 0 0 0;">I heard every word. You should be so proud!</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            edited_text = st.text_area(
+                "📝 What you said (feel free to edit):",
+                value=text,
+                height=100,
+                key=f"sm_edited_{current_index}"
+            )
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔄 Try Again", key=f"sm_retry_{current_index}"):
+                    st.session_state[f'sm_transcribed_text_{current_index}'] = None
+                    st.rerun()
+            
+            return edited_text
         
         return None
     
@@ -235,94 +347,180 @@ class UIComponents:
     def _display_standard_audio_interface(qa_data: Dict, current_index: int) -> Optional[str]:
         """Display standard audio recording interface with live visualization"""
         
-        # Option to choose between live and simple recording
-        col1, col2 = st.columns([3, 1])
+        st.markdown("""
+        <div style="background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; margin: 1rem 0;">
+            <h4 style="color: #334155; margin-bottom: 1rem;">🎙️ Record Your Answer</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Initialize recording state
+        if 'is_recording' not in st.session_state:
+            st.session_state.is_recording = False
+        if f'transcribed_text_{current_index}' not in st.session_state:
+            st.session_state[f'transcribed_text_{current_index}'] = None
+            
+        col1, col2, col3 = st.columns([2, 1, 1])
         
         with col1:
-            record_seconds = st.slider("Select recording time (seconds):", 3, 15, 5)
+            record_seconds = st.slider(
+                "⏱️ Recording duration", 
+                3, 30, 10,
+                help="Select how long you want to record"
+            )
         
         with col2:
-            use_live = st.checkbox("🔴 Live View", value=True, help="Show real-time audio visualization")
+            use_live = st.checkbox("🔴 Live waveform", value=False, help="Show real-time audio visualization (may be slower)")
         
-        if use_live:
-            # Use live audio visualizer
-            if st.button("🎙️ Record Your Answer (Live)", type="primary"):
-                try:
-                    audio_data, sample_rate = live_audio_interface.display_live_recording_interface(record_seconds)
-                    
-                    if audio_data is not None:
-                        # Store audio data
-                        st.session_state[f'audio_data_{current_index}'] = audio_data
-                        st.session_state[f'audio_sample_rate_{current_index}'] = sample_rate
-                        
-                        # Transcribe
-                        import scipy.io.wavfile as wav
-                        import speech_recognition as sr
-                        
-                        # Save to temp file for transcription
-                        wav.write("temp.wav", sample_rate, (audio_data * 32767).astype(np.int16))
-                        
-                        with st.spinner("🔍 Transcribing your answer..."):
-                            recognizer = sr.Recognizer()
-                            with sr.AudioFile("temp.wav") as source:
-                                audio_file = recognizer.record(source)
-                                text = recognizer.recognize_google(audio_file)
-                                
-                                st.success("✅ Transcription Successful")
-                                st.text_area("Your Answer (from audio)", value=text, key=f"audio_text_{current_index}")
-                                
-                                return text
+        with col3:
+            st.markdown(f"<div style='padding-top: 1.5rem; color: #64748b;'>📊 {record_seconds}s max</div>", unsafe_allow_html=True)
+        
+        # Recording button with better state management
+        col_btn1, col_btn2 = st.columns(2)
+        
+        with col_btn1:
+            record_clicked = st.button(
+                "🎙️ Start Recording", 
+                type="primary",
+                key=f"record_btn_{current_index}",
+                use_container_width=True
+            )
+        
+        # Handle recording
+        if record_clicked:
+            try:
+                import sounddevice as sd
+                import scipy.io.wavfile as wav
+                import speech_recognition as sr
+                import os
                 
-                except Exception as e:
-                    st.error(f"❌ Error during recording/transcription: {e}")
-                    return None
-        else:
-            # Simple recording mode (original)
-            if st.button("🎙️ Record Your Answer"):
-                try:
-                    st.info("Recording... Speak now!")
+                # Show recording status
+                status_placeholder = st.empty()
+                progress_placeholder = st.empty()
+                
+                status_placeholder.markdown("""
+                <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+                            border-radius: 12px; padding: 1rem; text-align: center;">
+                    <span style="font-size: 1.5rem;">🔴</span>
+                    <strong style="color: #991b1b;"> Recording in progress...</strong>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Record audio
+                fs = 44100
+                temp_file = f"temp_audio_{current_index}.wav"  # Initialize temp_file early
+                
+                if use_live:
+                    # Use live visualizer - use the new direct recording method
+                    audio_data, sample_rate = live_audio_interface.record_with_visualization(record_seconds)
+                    if audio_data is not None and len(audio_data) > 0:
+                        # Convert float to int16 for wav file
+                        audio_int = (audio_data * 32767).astype(np.int16)
+                        wav.write(temp_file, sample_rate, audio_int)
+                    else:
+                        status_placeholder.empty()
+                        progress_placeholder.empty()
+                        st.warning("🔇 No audio recorded. Please try again.")
+                        return None
+                else:
+                    # Simple recording with progress
+                    progress_bar = progress_placeholder.progress(0)
                     
-                    import sounddevice as sd
-                    import scipy.io.wavfile as wav
-                    import speech_recognition as sr
+                    # Record in chunks to show progress
+                    chunk_duration = 0.5  # seconds per chunk
+                    num_chunks = int(record_seconds / chunk_duration)
+                    all_audio = []
                     
-                    fs = 44100
-                    audio = sd.rec(int(record_seconds * fs), samplerate=fs, channels=1, dtype='int16')
-                    sd.wait()
-                    wav.write("temp.wav", fs, audio)
+                    for i in range(num_chunks):
+                        chunk = sd.rec(int(chunk_duration * fs), samplerate=fs, channels=1, dtype='int16')
+                        sd.wait()
+                        all_audio.append(chunk)
+                        progress_bar.progress((i + 1) / num_chunks)
                     
-                    # Store audio data for analysis
-                    st.session_state[f'audio_data_{current_index}'] = audio.flatten()
-                    st.session_state[f'audio_sample_rate_{current_index}'] = fs
+                    audio = np.vstack(all_audio)
+                    wav.write(temp_file, fs, audio)
+                    sample_rate = fs
+                    audio_data = audio.flatten().astype(np.float32) / 32767.0
+                
+                status_placeholder.empty()
+                progress_placeholder.empty()
+                
+                # Store audio data
+                st.session_state[f'audio_data_{current_index}'] = audio_data
+                st.session_state[f'audio_sample_rate_{current_index}'] = sample_rate
+                st.session_state['last_recording_duration'] = record_seconds
+                
+                # Transcribe
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+                            border-radius: 12px; padding: 1rem; text-align: center;">
+                    <span style="font-size: 1.2rem;">🔍</span>
+                    <strong style="color: #1e40af;"> Transcribing your answer...</strong>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(temp_file) as source:
+                    audio_file = recognizer.record(source)
+                    text = recognizer.recognize_google(audio_file)
                     
-                    # Transcribe
-                    recognizer = sr.Recognizer()
-                    with sr.AudioFile("temp.wav") as source:
-                        audio_data = recognizer.record(source)
-                        text = recognizer.recognize_google(audio_data)
-                        
-                        st.success("✅ Transcription Successful")
-                        st.text_area("Your Answer (from audio)", value=text, key=f"audio_text_{current_index}")
-                        
-                        # Display audio analysis
-                        UIComponents.display_audio_analysis(
-                            st.session_state[f'audio_data_{current_index}'],
-                            st.session_state[f'audio_sample_rate_{current_index}']
-                        )
-                        
-                        return text
-                        
-                except Exception as e:
-                    st.error(f"❌ Error during recording/transcription: {e}")
-                    return None
+                    st.session_state[f'transcribed_text_{current_index}'] = text
+                    
+                    # Clean up temp file
+                    try:
+                        os.remove(temp_file)
+                    except:
+                        pass
+                    
+                    st.rerun()
+                    
+            except sr.UnknownValueError:
+                st.warning("🔇 Couldn't understand the audio. Please try speaking more clearly.")
+                return None
+            except sr.RequestError as e:
+                st.error(f"❌ Speech recognition service error: {e}")
+                return None
+            except Exception as e:
+                st.error(f"❌ Recording error: {str(e)}")
+                return None
         
-        # Show analysis if audio was previously recorded
-        if f'audio_data_{current_index}' in st.session_state:
-            if st.button("📊 Show Audio Analysis", key=f"show_analysis_{current_index}"):
-                UIComponents.display_audio_analysis(
-                    st.session_state[f'audio_data_{current_index}'],
-                    st.session_state[f'audio_sample_rate_{current_index}']
-                )
+        # Display transcription if available
+        if st.session_state.get(f'transcribed_text_{current_index}'):
+            text = st.session_state[f'transcribed_text_{current_index}']
+            
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
+                        border-radius: 12px; padding: 1rem; margin: 1rem 0;">
+                <span style="font-size: 1.2rem;">✅</span>
+                <strong style="color: #166534;"> Recording transcribed successfully!</strong>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show editable transcription
+            edited_text = st.text_area(
+                "📝 Your transcribed answer (you can edit if needed):",
+                value=text,
+                height=120,
+                key=f"edited_transcription_{current_index}"
+            )
+            
+            # Display audio analysis
+            if f'audio_data_{current_index}' in st.session_state:
+                with st.expander("📊 Audio Analysis", expanded=False):
+                    UIComponents.display_audio_analysis(
+                        st.session_state[f'audio_data_{current_index}'],
+                        st.session_state[f'audio_sample_rate_{current_index}']
+                    )
+            
+            # Clear and re-record option
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔄 Re-record", key=f"rerecord_{current_index}"):
+                    st.session_state[f'transcribed_text_{current_index}'] = None
+                    if f'audio_data_{current_index}' in st.session_state:
+                        del st.session_state[f'audio_data_{current_index}']
+                    st.rerun()
+            
+            return edited_text
         
         return None
     
@@ -349,7 +547,7 @@ class UIComponents:
         if mode == "selective_mutism_text":
             return st.button("📝 Submit Written Answer", key="backup_submit")
         else:
-            return st.button("✅ Submit Answer")
+            return st.button("✅ Submit Answer", type="primary")
     
     @staticmethod
     def display_evaluation_result(evaluation_result: Dict, mode: str = "standard") -> None:
@@ -361,24 +559,72 @@ class UIComponents:
             encouragement = evaluation_result.get('encouragement', 'Great job!')
             feedback = evaluation_result.get('feedback', 'You\'re doing wonderfully!')
             
-            st.success(f"✨ {encouragement}")
-            st.info(f"💪 **{feedback}**")
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); 
+                        border-radius: 16px; padding: 1.5rem; margin: 1rem 0; text-align: center;
+                        border: 2px solid #c4b5fd;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">{"🎉" if score >= 6 else "💜"}</div>
+                <div style="color: #6d28d9; font-size: 1.2rem; font-weight: 600;">{encouragement}</div>
+                <div style="color: #7c3aed; margin-top: 0.5rem;">{feedback}</div>
+                <div style="margin-top: 1rem;">
+                    <span style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white;
+                                padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: 600;">
+                        Score: {score}/10
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Special celebration for good scores
             if score >= 6:
                 st.balloons()
-                st.success("🎙️ **You did it! You spoke up and that's incredible!** Your voice matters!")
-            else:
-                st.info("🎙️ **You were so brave to speak! Every time you practice, you get stronger!**")
         else:
-            # Standard evaluation display
-            st.success(f"✅ Answer saved and scored: {score}/10")
+            # Determine score category
+            if score >= 8:
+                bg = "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)"
+                border_color = "#86efac"
+                text_color = "#166534"
+                emoji = "🌟"
+                message = "Excellent answer!"
+            elif score >= 6:
+                bg = "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)"
+                border_color = "#93c5fd"
+                text_color = "#1e40af"
+                emoji = "👍"
+                message = "Good job!"
+            elif score >= 4:
+                bg = "linear-gradient(135deg, #fef9c3 0%, #fef08a 100%)"
+                border_color = "#fde047"
+                text_color = "#854d0e"
+                emoji = "📝"
+                message = "Getting there!"
+            else:
+                bg = "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)"
+                border_color = "#fca5a5"
+                text_color = "#991b1b"
+                emoji = "📚"
+                message = "Keep practicing!"
             
-            # Show detailed feedback if available
-            if 'feedback' in evaluation_result:
-                st.info(f"💡 **Feedback:** {evaluation_result['feedback']}")
-            if 'suggestions' in evaluation_result:
-                st.info(f"📚 **Suggestions:** {evaluation_result['suggestions']}")
+            feedback = evaluation_result.get('feedback', '')
+            suggestions = evaluation_result.get('suggestions', '')
+            
+            st.markdown(f"""
+            <div style="background: {bg}; border-radius: 16px; padding: 1.5rem; margin: 1rem 0;
+                        border: 2px solid {border_color};">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span style="font-size: 1.5rem;">{emoji}</span>
+                        <span style="color: {text_color}; font-size: 1.1rem; font-weight: 600; margin-left: 0.5rem;">
+                            {message}
+                        </span>
+                    </div>
+                    <div style="background: white; padding: 0.5rem 1rem; border-radius: 12px;">
+                        <span style="color: {text_color}; font-weight: 700; font-size: 1.2rem;">{score}/10</span>
+                    </div>
+                </div>
+                {"<div style='margin-top: 1rem; color: " + text_color + "; font-size: 0.95rem;'><strong>💡 Feedback:</strong> " + feedback + "</div>" if feedback else ""}
+                {"<div style='margin-top: 0.5rem; color: " + text_color + "; font-size: 0.9rem;'><strong>📚 Tip:</strong> " + suggestions + "</div>" if suggestions else ""}
+            </div>
+            """, unsafe_allow_html=True)
     
     @staticmethod
     def display_session_statistics(evaluations: List[Dict]) -> None:
@@ -386,18 +632,23 @@ class UIComponents:
         if not evaluations:
             return
         
-        st.subheader("📊 Session Statistics")
-        
         stats = ScoringAnalytics.calculate_session_statistics(evaluations)
         
+        st.markdown("""
+        <div style="background: white; border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+            <div style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">📊 Session Progress</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Questions", stats['total_questions'])
-        col2.metric("Answered", stats['answered_questions'])
-        col3.metric("Score", f"{stats['total_score']}/{stats['max_possible_score']}")
+        col1.metric("📋 Questions", stats['total_questions'])
+        col2.metric("✅ Answered", stats['answered_questions'])
+        col3.metric("🎯 Score", f"{stats['total_score']}/{stats['max_possible_score']}")
         if stats['answered_questions'] > 0:
-            col4.metric("Average Score", f"{stats['average_score']:.1f}/10")
+            col4.metric("📈 Average", f"{stats['average_score']:.1f}/10")
         else:
-            col4.metric("Average Score", "0/10")
+            col4.metric("📈 Average", "—")
     
     @staticmethod
     def display_final_score_report(evaluations: List[Dict]) -> None:

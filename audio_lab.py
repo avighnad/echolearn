@@ -41,8 +41,14 @@ class AudioTrainingLab:
         # Initialize session state first
         self.initialize_session_state()
         
-        st.header("🎙️ Audio Training Laboratory")
-        st.markdown("**Collect and analyze audio data for machine learning model training**")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); 
+                    border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+                    border-left: 4px solid #ec4899;">
+            <h2 style="color: #be185d; margin: 0;">🎙️ Audio Training Lab</h2>
+            <p style="color: #64748b; margin: 0.5rem 0 0 0;">Record, analyze, and export audio for training</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Create tabs for different functionalities
         tab1, tab2, tab3, tab4 = st.tabs([

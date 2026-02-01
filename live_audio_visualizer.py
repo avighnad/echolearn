@@ -274,6 +274,46 @@ class LiveAudioInterface:
     def __init__(self):
         self.visualizer = LiveAudioVisualizer()
     
+    def record_with_visualization(self, duration_seconds):
+        """Record audio with real-time visualization - no extra UI, just recording.
+        
+        Use this method when you already have your own button/UI and just want
+        the recording functionality with live visualization.
+        
+        Returns:
+            tuple: (audio_data, sample_rate) or (None, None) if failed
+        """
+        # Create placeholders for live visualization
+        st.markdown("### 🔴 **RECORDING IN PROGRESS**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            placeholder_wave = st.empty()
+            placeholder_freq = st.empty()
+        
+        with col2:
+            placeholder_volume = st.empty()
+            placeholder_metrics = st.empty()
+        
+        # Start live recording
+        st.info("🎙️ **Recording... Speak now!**")
+        
+        audio_data = self.visualizer.start_live_recording(
+            duration_seconds,
+            placeholder_wave,
+            placeholder_volume,
+            placeholder_freq,
+            placeholder_metrics
+        )
+        
+        if audio_data is not None and len(audio_data) > 0:
+            st.success("✅ **Recording Complete!**")
+            return audio_data, self.visualizer.sample_rate
+        else:
+            st.error("❌ Recording failed. Please try again.")
+            return None, None
+    
     def display_live_recording_interface(self, duration=5):
         """Display the live recording interface with real-time visualization"""
         
